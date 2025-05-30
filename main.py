@@ -1,49 +1,44 @@
 import network
+import urequests
 import time
 from machine import Pin
 
-SSID = 'S20'
-PASSWORD = 'civic1999'
+SSID = ""
+PASSWORD = ""
 
-led = Pin("LED", Pin.OUT)
-
-def piscar_led(intervalo=0.3):
-    led.on()
-    time.sleep(intervalo)
-    led.off()
-    time.sleep(intervalo)
-
-def conectar_wifi(ssid, password, max_tentativas=30):
+def conectar_wifi():
     wlan = network.WLAN(network.STA_IF)
     wlan.active(True)
-    wlan.connect(ssid, password)
+    wlan.connect(SSID, PASSWORD)
 
-    print("🔄 Tentando conectar ao Wi-Fi...")
-    tentativas = 0
+    print("Conectando ao Wi-Fi...")
+    while not wlan.isconnected():
+        time.sleep(0.5)
+    print("Conectado:", wlan.ifconfig())
 
-    while not wlan.isconnected() and tentativas < max_tentativas:
-        piscar_led()
-        tentativas += 1
+def enviar_alerta_whatsapp(mensagem):
+    telefone = "+" 
+    apikey = ""
+    mensagem_formatada = mensagem.replace(" ", "+")
+    url = f"https://api.callmebot.com/whatsapp.php?phone={telefone}&text={mensagem_formatada}&apikey={apikey}"
+    
+    try:
+        resposta = urequests.get(url)
+        print("Mensagem enviada:", resposta.text)
+        resposta.close()
+    except Exception as e:
+        print("Erro ao enviar mensagem:", e)
 
-    if wlan.isconnected():
-        print("✅ Conectado ao Wi-Fi!")
-        print("📡 IP:", wlan.ifconfig()[0])
-        return True
-    else:
-        print("❌ Falha ao conectar após", max_tentativas, "tentativas.")
-        return False
-
-def led_conectado():
-    """Acende o LED fixo indicando conexão"""
-    led.value(1)
+def sensor_detectou_presenca():
+    return True  # teste sem sensor
 
 def main():
-    conectado = conectar_wifi(SSID, PASSWORD)
+    conectar_wifi()
+    
+    while True:
+        if sensor_detectou_presenca():
+            enviar_alerta_whatsapp("Movimento detectada")
+            time.sleep(10)  
 
-    if conectado:
-        led_conectado()
-    else:
-        led.value(0)
-        
-if __name__ == "__main__":
-    main()
+main()
+
