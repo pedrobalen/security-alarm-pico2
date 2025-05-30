@@ -1,0 +1,1 @@
+Este projeto utiliza um Raspberry Pi Pico 2 W em conjunto com um sensor ultrassônico para detectar a presença de objetos ou medir distâncias. Os dados captados são enviados a um servidor via requisições HTTP.
